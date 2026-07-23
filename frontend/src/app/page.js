@@ -14,7 +14,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="pb-16">
+    <main>
       <PortalHeader
         eyebrow="Estiu 2026"
         title="Mirador Quintana"
