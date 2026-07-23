@@ -33,6 +33,8 @@ function cartReducer(state, action) {
       return { ...state, items: state.items.filter((item) => item.key !== action.key) };
     case 'SET_TABLE_NUMBER':
       return { ...state, tableNumber: action.tableNumber };
+    case 'CLEAR':
+      return { items: [], tableNumber: '' };
     default:
       return state;
   }

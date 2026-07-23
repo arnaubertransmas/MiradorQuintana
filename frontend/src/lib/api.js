@@ -84,3 +84,19 @@ export async function deleteDish(token, id) {
   });
   return handleResponse(res);
 }
+
+export async function createOrder(payload) {
+  const res = await fetch(`${API_URL}/api/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+export async function simulatePayment(orderId) {
+  const res = await fetch(`${API_URL}/api/orders/${orderId}/simulate-payment`, {
+    method: 'POST',
+  });
+  return handleResponse(res);
+}

@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart-context';
+import { createOrder } from '@/lib/api';
 
 function CartContents({ onClose }) {
+  const router = useRouter();
   const { items, total, tableNumber, dispatch } = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   function updateQuantity(key, quantity) {
     dispatch({ type: 'SET_QUANTITY', key, quantity });
@@ -20,7 +25,37 @@ function CartContents({ onClose }) {
 
   const tableNumberValue = Number(tableNumber);
   const isTableNumberValid = tableNumber !== '' && tableNumberValue >= 1 && tableNumberValue <= 100;
-  const canCheckout = items.length > 0 && isTableNumberValid;
+  const canCheckout = items.length > 0 && isTableNumberValid && !submitting;
+
+  async function handleCheckout() {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const payload = {
+        num_taula: tableNumberValue,
+        items: items.map((item) => ({
+          plat_id: item.dishId,
+          quantitat: item.quantity,
+          extres: (item.extras || []).map((extra) => ({ nom: extra.nom })),
+        })),
+      };
+      const order = await createOrder(payload);
+      sessionStorage.setItem(
+        'pendingOrder',
+        JSON.stringify({
+          id: order.id,
+          total: order.preu_total,
+          tableNumber: order.num_taula,
+          itemCount: items.length,
+        })
+      );
+      dispatch({ type: 'CLEAR' });
+      router.push(`/pay?orderId=${order.id}`);
+    } catch (err) {
+      setError(err.message);
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -108,12 +143,15 @@ function CartContents({ onClose }) {
         <span>{total.toFixed(2)} €</span>
       </div>
 
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
       <button
         type="button"
+        onClick={handleCheckout}
         disabled={!canCheckout}
         className="mt-4 w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
-        Continuar al pagament
+        {submitting ? 'Enviant comanda…' : 'Continuar al pagament'}
       </button>
     </div>
   );

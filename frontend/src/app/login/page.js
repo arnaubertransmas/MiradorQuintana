@@ -32,9 +32,7 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-neutral-50 pb-16">
       <PortalHeader
-        eyebrow="Accés del personal"
-        title="Mirador Quintana"
-        subtitle="Inicia sessió per accedir a Cuina o Administració."
+        title="El Mirador de la Quintana"
         align="center"
       />
 

@@ -17,7 +17,7 @@ export default async function HomePage() {
     <main>
       <PortalHeader
         eyebrow="Estiu 2026"
-        title="Mirador Quintana"
+        title="El Mirador de la Quintana"
         subtitle="Tria els teus plats, personalitza’ls i indica la teva taula."
         align="center"
       />

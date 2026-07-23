@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Mirador Quintana',
+  title: 'El Mirador de la Quintana',
   description: 'Browse the menu and order straight from your table.',
 };
 

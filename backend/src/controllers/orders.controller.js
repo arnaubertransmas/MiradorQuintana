@@ -2,6 +2,121 @@ const pool = require('../config/db');
 
 const ORDER_STATUSES = ['pending', 'preparing', 'completed', 'cancelled'];
 
+class OrderInputError extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 400;
+  }
+}
+
+async function createOrder(req, res) {
+  const { num_taula: numTaulaRaw, items } = req.body;
+  const numTaula = Number(numTaulaRaw);
+
+  if (!Number.isInteger(numTaula) || numTaula < 1 || numTaula > 100) {
+    return res.status(400).json({ error: 'num_taula must be an integer between 1 and 100' });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'items must be a non-empty array' });
+  }
+  for (const item of items) {
+    if (!Number.isInteger(item.plat_id) || !Number.isInteger(item.quantitat) || item.quantitat <= 0) {
+      return res.status(400).json({ error: 'Each item needs a valid plat_id and quantitat > 0' });
+    }
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    let total = 0;
+    const preparedItems = [];
+
+    for (const item of items) {
+      const dishResult = await client.query('SELECT id, plat, preu, extres FROM plats WHERE id = $1', [
+        item.plat_id,
+      ]);
+      const dish = dishResult.rows[0];
+      if (!dish) {
+        throw new OrderInputError(`Dish ${item.plat_id} not found`);
+      }
+
+      const availableExtras = Array.isArray(dish.extres) ? dish.extres : [];
+      const requestedNames = Array.isArray(item.extres) ? item.extres.map((extra) => extra.nom) : [];
+      const matchedExtras = requestedNames.map((nom) => {
+        const match = availableExtras.find((extra) => extra.nom === nom);
+        if (!match) {
+          throw new OrderInputError(`Extra "${nom}" is not valid for dish "${dish.plat}"`);
+        }
+        return match;
+      });
+
+      const unitPrice = Number(dish.preu) + matchedExtras.reduce((sum, extra) => sum + Number(extra.preu), 0);
+      total += unitPrice * item.quantitat;
+
+      preparedItems.push({
+        dishId: dish.id,
+        dishName: dish.plat,
+        quantitat: item.quantitat,
+        unitPrice,
+        extras: matchedExtras,
+      });
+    }
+
+    const orderResult = await client.query(
+      `INSERT INTO orders (num_taula, estat, preu_total)
+       VALUES ($1, 'pending', $2)
+       RETURNING id, num_taula, estat, preu_total, created_at`,
+      [numTaula, total]
+    );
+    const order = orderResult.rows[0];
+
+    for (const item of preparedItems) {
+      await client.query(
+        `INSERT INTO order_items (order_id, plat_id, plat_nom, quantitat, preu_unitat, extres)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [order.id, item.dishId, item.dishName, item.quantitat, item.unitPrice, JSON.stringify(item.extras)]
+      );
+    }
+
+    await client.query('COMMIT');
+    return res.status(201).json(order);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    if (err instanceof OrderInputError) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    console.error('Create order error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+}
+
+// TEMPORARY: stands in for the real Stripe webhook (payment_intent.succeeded) until
+// Stripe is wired up. Flips the order to paid/preparing exactly like that webhook would.
+async function simulatePayment(req, res) {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE orders SET stripe_status = 'paid', estat = 'preparing', updated_at = NOW()
+       WHERE id = $1 AND estat = 'pending'
+       RETURNING id, num_taula, estat, preu_total, stripe_status, updated_at`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found or already processed' });
+    }
+
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Simulate payment error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 async function listOrders(req, res) {
   const { status } = req.query;
 
@@ -67,4 +182,4 @@ async function updateOrderStatus(req, res) {
   }
 }
 
-module.exports = { listOrders, updateOrderStatus };
+module.exports = { listOrders, updateOrderStatus, createOrder, simulatePayment };
