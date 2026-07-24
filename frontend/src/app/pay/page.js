@@ -68,7 +68,9 @@ function PayContent() {
 
               {summary && (
                 <div className="mt-4 space-y-1 text-sm text-neutral-600">
-                  <p>Taula {summary.tableNumber}</p>
+                  <p>
+                    {summary.customerName} · Taula {summary.tableNumber}
+                  </p>
                   <p>
                     {summary.itemCount} article{summary.itemCount > 1 ? 's' : ''}
                   </p>

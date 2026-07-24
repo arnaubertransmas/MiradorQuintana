@@ -1,18 +1,14 @@
 const STATUS_STYLES = {
   pending: { border: 'border-l-amber-400', badge: 'bg-amber-100 text-amber-700', label: 'Pendent' },
   preparing: { border: 'border-l-blue-400', badge: 'bg-blue-100 text-blue-700', label: 'En preparació' },
+  completed: { border: 'border-l-emerald-400', badge: 'bg-emerald-100 text-emerald-700', label: 'Completada' },
+  cancelled: { border: 'border-l-neutral-300', badge: 'bg-neutral-100 text-neutral-500', label: 'Cancel·lada' },
 };
 
-function minutesAgo(dateString) {
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(dateString).getTime()) / 60000));
-  if (minutes < 1) return 'ara mateix';
-  if (minutes === 1) return 'fa 1 min';
-  return `fa ${minutes} min`;
-}
-
-export default function OrderCard({ order, onAdvance, onCancel }) {
+export default function HistoryOrderCard({ order }) {
   const items = Array.isArray(order.items) ? order.items : [];
   const style = STATUS_STYLES[order.estat] ?? STATUS_STYLES.pending;
+  const createdAt = new Date(order.created_at);
 
   return (
     <div className={`rounded-2xl border border-l-4 border-neutral-200 bg-white p-4 shadow-sm ${style.border}`}>
@@ -21,7 +17,9 @@ export default function OrderCard({ order, onAdvance, onCancel }) {
           <p className="text-sm font-semibold text-neutral-900">
             {order.nom_client} · Taula {order.num_taula}
           </p>
-          <p className="text-xs text-neutral-400">{minutesAgo(order.created_at)}</p>
+          <p className="text-xs text-neutral-400">
+            {createdAt.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' })}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${style.badge}`}>{style.label}</span>
@@ -39,23 +37,6 @@ export default function OrderCard({ order, onAdvance, onCancel }) {
           </li>
         ))}
       </ul>
-
-      <div className="mt-4 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onAdvance(order)}
-          className="flex-1 rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-700"
-        >
-          {order.estat === 'pending' ? '👨‍🍳 Marcar en preparació' : '✅ Marcar completat'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onCancel(order)}
-          className="rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-500 transition hover:border-red-400 hover:text-red-500"
-        >
-          Cancel·lar
-        </button>
-      </div>
     </div>
   );
 }

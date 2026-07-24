@@ -10,9 +10,13 @@ class OrderInputError extends Error {
 }
 
 async function createOrder(req, res) {
-  const { num_taula: numTaulaRaw, items } = req.body;
+  const { nom_client: nomClientRaw, num_taula: numTaulaRaw, items } = req.body;
   const numTaula = Number(numTaulaRaw);
+  const nomClient = typeof nomClientRaw === 'string' ? nomClientRaw.trim() : '';
 
+  if (!nomClient) {
+    return res.status(400).json({ error: 'nom_client is required' });
+  }
   if (!Number.isInteger(numTaula) || numTaula < 1 || numTaula > 100) {
     return res.status(400).json({ error: 'num_taula must be an integer between 1 and 100' });
   }
@@ -64,10 +68,10 @@ async function createOrder(req, res) {
     }
 
     const orderResult = await client.query(
-      `INSERT INTO orders (num_taula, estat, preu_total)
-       VALUES ($1, 'pending', $2)
-       RETURNING id, num_taula, estat, preu_total, created_at`,
-      [numTaula, total]
+      `INSERT INTO orders (nom_client, num_taula, estat, preu_total)
+       VALUES ($1, $2, 'pending', $3)
+       RETURNING id, nom_client, num_taula, estat, preu_total, created_at`,
+      [nomClient, numTaula, total]
     );
     const order = orderResult.rows[0];
 
@@ -128,7 +132,7 @@ async function listOrders(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT o.id, o.num_taula, o.estat, o.preu_total, o.stripe_status, o.created_at, o.updated_at,
+      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.stripe_status, o.created_at, o.updated_at,
               COALESCE(
                 json_agg(
                   json_build_object(
@@ -151,6 +155,35 @@ async function listOrders(req, res) {
     return res.json(result.rows);
   } catch (err) {
     console.error('List orders error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+async function getOrderHistory(req, res) {
+  try {
+    const result = await pool.query(
+      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.stripe_status, o.created_at, o.updated_at,
+              COALESCE(
+                json_agg(
+                  json_build_object(
+                    'id', oi.id,
+                    'plat_nom', oi.plat_nom,
+                    'quantitat', oi.quantitat,
+                    'preu_unitat', oi.preu_unitat,
+                    'extres', oi.extres
+                  ) ORDER BY oi.id
+                ) FILTER (WHERE oi.id IS NOT NULL),
+                '[]'
+              ) AS items
+       FROM orders o
+       LEFT JOIN order_items oi ON oi.order_id = o.id
+       WHERE o.created_at >= NOW() - INTERVAL '1 day'
+       GROUP BY o.id
+       ORDER BY o.created_at DESC`
+    );
+    return res.json(result.rows);
+  } catch (err) {
+    console.error('Order history error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -182,4 +215,4 @@ async function updateOrderStatus(req, res) {
   }
 }
 
-module.exports = { listOrders, updateOrderStatus, createOrder, simulatePayment };
+module.exports = { listOrders, updateOrderStatus, createOrder, simulatePayment, getOrderHistory };

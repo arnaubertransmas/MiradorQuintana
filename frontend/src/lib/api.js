@@ -100,3 +100,11 @@ export async function simulatePayment(orderId) {
   });
   return handleResponse(res);
 }
+
+export async function getOrderHistory(token) {
+  const res = await fetch(`${API_URL}/api/orders/history`, {
+    cache: 'no-store',
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}

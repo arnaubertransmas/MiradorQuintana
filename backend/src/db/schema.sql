@@ -15,6 +15,7 @@ CREATE TABLE plats (
 
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
+  nom_client TEXT NOT NULL,
   num_taula INTEGER NOT NULL,
   estat TEXT NOT NULL DEFAULT 'pending', -- pending | preparing | completed | cancelled
   preu_total NUMERIC(10,2) NOT NULL,

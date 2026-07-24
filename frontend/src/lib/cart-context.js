@@ -33,15 +33,17 @@ function cartReducer(state, action) {
       return { ...state, items: state.items.filter((item) => item.key !== action.key) };
     case 'SET_TABLE_NUMBER':
       return { ...state, tableNumber: action.tableNumber };
+    case 'SET_CUSTOMER_NAME':
+      return { ...state, customerName: action.customerName };
     case 'CLEAR':
-      return { items: [], tableNumber: '' };
+      return { items: [], tableNumber: '', customerName: '' };
     default:
       return state;
   }
 }
 
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], tableNumber: '' });
+  const [state, dispatch] = useReducer(cartReducer, { items: [], tableNumber: '', customerName: '' });
 
   const total = useMemo(
     () =>

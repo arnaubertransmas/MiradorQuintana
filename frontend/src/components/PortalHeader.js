@@ -6,8 +6,8 @@ export default function PortalHeader({ eyebrow, title, subtitle, action, align =
 
   return (
     <section
-      className={`relative overflow-hidden border-b border-neutral-200 pt-14 pb-10 ${
-        hasImage ? 'text-white' : 'bg-white pt-10 pb-8'
+      className={`relative overflow-hidden border-b pt-14 pb-10 ${
+        hasImage ? 'border-neutral-200 text-white' : 'border-[#E8D2AC] bg-[#F5E3CE] pt-10 pb-8'
       }`}
     >
       {hasImage && (
@@ -33,7 +33,7 @@ export default function PortalHeader({ eyebrow, title, subtitle, action, align =
           {eyebrow && (
             <span
               className={`inline-block rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider ${
-                hasImage ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-700'
+                hasImage ? 'bg-white/20 text-white' : 'bg-[#EFB37F] text-[#5C3410]'
               }`}
             >
               {eyebrow}
@@ -41,13 +41,13 @@ export default function PortalHeader({ eyebrow, title, subtitle, action, align =
           )}
           <h1
             className={`mt-3 text-2xl font-bold tracking-tight sm:text-3xl ${
-              hasImage ? 'text-white' : 'text-neutral-900'
+              hasImage ? 'text-white' : 'text-[#4A2E14]'
             }`}
           >
             {title}
           </h1>
           {subtitle && (
-            <p className={`mt-1 text-sm ${hasImage ? 'text-white/85' : 'text-neutral-500'}`}>{subtitle}</p>
+            <p className={`mt-1 text-sm ${hasImage ? 'text-white/85' : 'text-[#7A5C3C]'}`}>{subtitle}</p>
           )}
         </div>
         {!isCentered && action}

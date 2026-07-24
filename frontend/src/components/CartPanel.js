@@ -7,7 +7,7 @@ import { createOrder } from '@/lib/api';
 
 function CartContents({ onClose }) {
   const router = useRouter();
-  const { items, total, tableNumber, dispatch } = useCart();
+  const { items, total, tableNumber, customerName, dispatch } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -19,19 +19,25 @@ function CartContents({ onClose }) {
     dispatch({ type: 'REMOVE_ITEM', key });
   }
 
+  function handleCustomerNameChange(event) {
+    dispatch({ type: 'SET_CUSTOMER_NAME', customerName: event.target.value });
+  }
+
   function handleTableNumberChange(event) {
     dispatch({ type: 'SET_TABLE_NUMBER', tableNumber: event.target.value });
   }
 
+  const isCustomerNameValid = customerName.trim() !== '';
   const tableNumberValue = Number(tableNumber);
   const isTableNumberValid = tableNumber !== '' && tableNumberValue >= 1 && tableNumberValue <= 100;
-  const canCheckout = items.length > 0 && isTableNumberValid && !submitting;
+  const canCheckout = items.length > 0 && isCustomerNameValid && isTableNumberValid && !submitting;
 
   async function handleCheckout() {
     setError(null);
     setSubmitting(true);
     try {
       const payload = {
+        nom_client: customerName.trim(),
         num_taula: tableNumberValue,
         items: items.map((item) => ({
           plat_id: item.dishId,
@@ -46,6 +52,7 @@ function CartContents({ onClose }) {
           id: order.id,
           total: order.preu_total,
           tableNumber: order.num_taula,
+          customerName: order.nom_client,
           itemCount: items.length,
         })
       );
@@ -122,7 +129,21 @@ function CartContents({ onClose }) {
         </div>
       )}
 
-      <div className="mt-4 border-t border-neutral-200 pt-4">
+      <div className="mt-4 space-y-3 border-t border-neutral-200 pt-4">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700" htmlFor="customer-name">
+            El teu nom
+          </label>
+          <input
+            id="customer-name"
+            type="text"
+            value={customerName}
+            onChange={handleCustomerNameChange}
+            placeholder="p. ex. Anna"
+            className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+
         <label className="block text-sm font-medium text-neutral-700" htmlFor="table-number">
           Número de taula
         </label>
