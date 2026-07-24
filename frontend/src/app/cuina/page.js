@@ -62,7 +62,7 @@ function KitchenBoard() {
 
   function handleLogout() {
     clearSession();
-    router.push('/login');
+    router.push('/');
   }
 
   const pending = orders.filter((order) => order.estat === 'pending');
