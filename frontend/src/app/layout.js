@@ -2,7 +2,10 @@ import './globals.css';
 
 export const metadata = {
   title: 'El Mirador de la Quintana',
-  description: 'Browse the menu and order straight from your table.',
+  description: 'Demana des de l\'aplicació del mòbil',
+  icons: {
+    icon: '/qq.png',
+  },
 };
 
 export default function RootLayout({ children }) {
