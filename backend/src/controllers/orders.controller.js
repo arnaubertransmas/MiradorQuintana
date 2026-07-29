@@ -195,6 +195,9 @@ async function updateOrderStatus(req, res) {
   if (!ORDER_STATUSES.includes(estat)) {
     return res.status(400).json({ error: `estat must be one of: ${ORDER_STATUSES.join(', ')}` });
   }
+  if (estat === 'preparing') {
+    return res.status(400).json({ error: 'Orders move to preparing automatically once payment is confirmed' });
+  }
 
   try {
     const result = await pool.query(

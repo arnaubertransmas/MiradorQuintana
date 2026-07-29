@@ -1,5 +1,5 @@
 export const CATEGORY_META = [
-  { key: 'Tapes', label: 'Tapes', icon: '🍤', image: '/braves.png' },
+  { key: 'Tapes', label: 'Tapes', icon: '🥘', image: '/braves.png' },
   { key: 'Hamburgueses', label: 'Hamburgueses', icon: '🍔' },
   { key: 'Plats', label: 'Plats', icon: '🍽️' },
   { key: 'Entrepans calents', label: 'Entrepans calents', icon: '🥪' },

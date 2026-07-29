@@ -45,9 +45,9 @@ export default function DishListItem({ dish }) {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="relative shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-lg leading-none text-white transition hover:bg-brand-700"
         >
-          Afegir
+          +
           {dishQuantityInCart > 0 && (
             <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-900 text-xs text-white">
               {dishQuantityInCart}

@@ -26,7 +26,7 @@ function KitchenBoard() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const data = await getOrders(getToken());
+      const data = await getOrders(getToken(), 'preparing');
       setOrders(data);
       setError(null);
       setLastUpdated(new Date());
@@ -42,9 +42,8 @@ function KitchenBoard() {
   }, [fetchOrders]);
 
   async function handleAdvance(order) {
-    const nextStatus = order.estat === 'pending' ? 'preparing' : 'completed';
     try {
-      await updateOrderStatus(getToken(), order.id, nextStatus);
+      await updateOrderStatus(getToken(), order.id, 'completed');
       fetchOrders();
     } catch (err) {
       setError(err.message);
@@ -64,9 +63,6 @@ function KitchenBoard() {
     clearSession();
     router.push('/');
   }
-
-  const pending = orders.filter((order) => order.estat === 'pending');
-  const preparing = orders.filter((order) => order.estat === 'preparing');
 
   return (
     <main className="min-h-screen bg-neutral-50 pb-16">
@@ -100,28 +96,16 @@ function KitchenBoard() {
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">{error}</div>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6">
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-              ⏳ Pendents <span className="text-neutral-400">({pending.length})</span>
+              👨‍🍳 En preparació <span className="text-neutral-400">({orders.length})</span>
             </h2>
             <div className="space-y-3">
-              {pending.map((order) => (
+              {orders.map((order) => (
                 <OrderCard key={order.id} order={order} onAdvance={handleAdvance} onCancel={handleCancel} />
               ))}
-              {pending.length === 0 && <EmptyColumn message="Sense comandes pendents." />}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-              👨‍🍳 En preparació <span className="text-neutral-400">({preparing.length})</span>
-            </h2>
-            <div className="space-y-3">
-              {preparing.map((order) => (
-                <OrderCard key={order.id} order={order} onAdvance={handleAdvance} onCancel={handleCancel} />
-              ))}
-              {preparing.length === 0 && <EmptyColumn message="Res en preparació." />}
+              {orders.length === 0 && <EmptyColumn message="Res en preparació." />}
             </div>
           </section>
         </div>
