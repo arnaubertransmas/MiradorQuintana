@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RequireAuth from '@/components/RequireAuth';
-import PortalHeader from '@/components/PortalHeader';
+import PageHero from '@/components/PageHero';
 import OrderCard from '@/components/OrderCard';
 import { getOrders, updateOrderStatus } from '@/lib/api';
 import { getToken, clearSession } from '@/lib/auth';
@@ -65,10 +65,9 @@ function KitchenBoard() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 pb-16">
-      <PortalHeader
-        eyebrow="Cuina"
-        title="Comandes en directe"
+    <main className="min-h-screen bg-white pb-16">
+      <PageHero
+        caption="Cuina"
         subtitle={
           lastUpdated ? (
             <span className="inline-flex items-center gap-1.5">

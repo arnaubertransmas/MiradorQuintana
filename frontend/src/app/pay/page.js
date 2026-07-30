@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import PortalHeader from '@/components/PortalHeader';
+import PageHero from '@/components/PageHero';
 import { simulatePayment } from '@/lib/api';
 
 function PayContent() {
@@ -37,15 +37,15 @@ function PayContent() {
 
   if (!orderId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 text-center">
+      <main className="flex min-h-screen items-center justify-center bg-white px-4 text-center">
         <p className="text-neutral-500">No s&apos;ha trobat cap comanda per pagar.</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 pb-16">
-      <PortalHeader eyebrow="Pagament" title="Confirma el pagament" align="center" />
+    <main className="min-h-screen bg-white pb-16">
+      <PageHero caption="Pagament" subtitle="Confirma el pagament de la teva comanda." />
 
       <div className="mx-auto mt-10 max-w-sm px-4">
         <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">

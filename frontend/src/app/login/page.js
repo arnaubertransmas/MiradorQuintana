@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/api';
 import { setSession, dashboardPathForRole } from '@/lib/auth';
+import PageHero from '@/components/PageHero';
 import Footer from '@/components/Footer';
 
 export default function LoginPage() {
@@ -31,21 +31,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <section className="border-b border-[#E8D2AC] bg-[#F5E3CE] py-10">
-        <div className="relative mx-auto h-20 w-20">
-          <Image src="/logo1.png" alt="El Mirador de la Quintana" fill className="object-contain" />
-        </div>
-      </section>
+    <main className="min-h-screen bg-white">
+      <PageHero caption="Accés del personal" subtitle="Inicia sessió per accedir a Cuina o Administració." />
 
-      <div className="mx-auto max-w-sm px-4 py-12">
+      <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
           <Link href="/" className="text-sm text-neutral-400 hover:text-neutral-600">
             ← Tornar a la carta
           </Link>
-
-          <h1 className="mt-4 text-xl font-semibold text-neutral-900">Accés del personal</h1>
-          <p className="mt-1 text-sm text-neutral-500">Inicia sessió per accedir a Cuina o Administració.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>

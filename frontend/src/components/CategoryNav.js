@@ -5,8 +5,8 @@ import { CATEGORY_TAB_IMAGES } from '@/lib/categories';
 
 export default function CategoryNav({ categories, active, onSelect }) {
   return (
-    <div className="sticky top-0 z-[5] -mx-4 border-b border-neutral-200 bg-neutral-50/95 px-4 py-3 backdrop-blur">
-      <div className="flex gap-2 overflow-x-auto">
+    <div className="sticky top-0 z-[5] -mx-4 border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur">
+      <div className="flex gap-2 overflow-x-auto sm:justify-center">
         {categories.map((category) => {
           const isActive = category.key === active;
           const tabImage = CATEGORY_TAB_IMAGES[category.key];

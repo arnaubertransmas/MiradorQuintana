@@ -1,4 +1,4 @@
-import HomeHero from '@/components/HomeHero';
+import PageHero from '@/components/PageHero';
 import MenuExplorer from '@/components/MenuExplorer';
 import Footer from '@/components/Footer';
 import { getDishes } from '@/lib/api';
@@ -14,8 +14,8 @@ export default async function HomePage() {
   }
 
   return (
-    <main>
-      <HomeHero />
+    <main className="bg-white">
+      <PageHero caption="Castellcir" subtitle="Tria els teus plats i personalitza’ls." />
 
       <div className="pt-10">
         {error && (

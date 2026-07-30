@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RequireAuth from '@/components/RequireAuth';
-import PortalHeader from '@/components/PortalHeader';
+import PageHero from '@/components/PageHero';
 import AdminMenuExplorer from '@/components/AdminMenuExplorer';
 import DishFormModal from '@/components/DishFormModal';
 import HistoryOrderCard from '@/components/HistoryOrderCard';
@@ -70,10 +70,9 @@ function AdminBoard() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 pb-16">
-      <PortalHeader
-        eyebrow="Administració"
-        title="Gestió del menú"
+    <main className="min-h-screen bg-white pb-16">
+      <PageHero
+        caption="Administració"
         subtitle="Afegeix, edita o elimina plats de la carta."
         action={
           <button
