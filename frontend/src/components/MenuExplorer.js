@@ -22,12 +22,12 @@ export default function MenuExplorer({ dishes }) {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
           <div className="space-y-3">
             {activeCategoryMeta?.image && (
-              <div className="relative mb-2 h-32 w-full overflow-hidden rounded-2xl sm:h-40">
+              <div className="relative mb-2 h-56 w-full overflow-hidden rounded-2xl">
                 <Image
                   src={activeCategoryMeta.image}
                   alt={activeCategoryMeta.label}
                   fill
-                  className="object-cover"
+                  className="object-cover object-center"
                 />
               </div>
             )}
