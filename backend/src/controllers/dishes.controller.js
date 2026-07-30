@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 function validateDishInput(body) {
-  const { plat, categoria, preu, extres, disponibilitat } = body;
+  const { plat, categoria, preu, extres, disponibilitat, imatge, descripcio } = body;
   const errors = [];
 
   if (typeof plat !== 'string' || plat.trim().length === 0) {
@@ -20,6 +20,12 @@ function validateDishInput(body) {
   if (disponibilitat !== undefined && typeof disponibilitat !== 'boolean') {
     errors.push('disponibilitat must be a boolean');
   }
+  if (imatge !== undefined && imatge !== null && typeof imatge !== 'string') {
+    errors.push('imatge must be a string');
+  }
+  if (descripcio !== undefined && descripcio !== null && typeof descripcio !== 'string') {
+    errors.push('descripcio must be a string');
+  }
 
   return errors;
 }
@@ -27,7 +33,8 @@ function validateDishInput(body) {
 async function listDishes(req, res) {
   try {
     const result = await pool.query(
-      `SELECT id, plat AS dish, categoria AS category, preu AS price, extres AS extras
+      `SELECT id, plat AS dish, categoria AS category, preu AS price, extres AS extras,
+              imatge AS image, descripcio AS description
        FROM plats
        WHERE disponibilitat = true
        ORDER BY categoria, plat`
@@ -42,7 +49,8 @@ async function listDishes(req, res) {
 async function listAllDishes(req, res) {
   try {
     const result = await pool.query(
-      `SELECT id, plat AS dish, categoria AS category, preu AS price, extres AS extras, disponibilitat AS available
+      `SELECT id, plat AS dish, categoria AS category, preu AS price, extres AS extras,
+              imatge AS image, descripcio AS description, disponibilitat AS available
        FROM plats
        ORDER BY categoria, plat`
     );
@@ -59,14 +67,23 @@ async function createDish(req, res) {
     return res.status(400).json({ error: errors.join(', ') });
   }
 
-  const { plat, categoria, preu, extres, disponibilitat } = req.body;
+  const { plat, categoria, preu, extres, disponibilitat, imatge, descripcio } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO plats (plat, categoria, preu, extres, disponibilitat)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, plat AS dish, categoria AS category, preu AS price, extres AS extras, disponibilitat AS available`,
-      [plat.trim(), categoria.trim(), preu, extres ? JSON.stringify(extres) : null, disponibilitat ?? true]
+      `INSERT INTO plats (plat, categoria, preu, extres, disponibilitat, imatge, descripcio)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, plat AS dish, categoria AS category, preu AS price, extres AS extras,
+                 imatge AS image, descripcio AS description, disponibilitat AS available`,
+      [
+        plat.trim(),
+        categoria.trim(),
+        preu,
+        extres ? JSON.stringify(extres) : null,
+        disponibilitat ?? true,
+        imatge?.trim() || null,
+        descripcio?.trim() || null,
+      ]
     );
     return res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -82,15 +99,25 @@ async function updateDish(req, res) {
     return res.status(400).json({ error: errors.join(', ') });
   }
 
-  const { plat, categoria, preu, extres, disponibilitat } = req.body;
+  const { plat, categoria, preu, extres, disponibilitat, imatge, descripcio } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE plats
-       SET plat = $1, categoria = $2, preu = $3, extres = $4, disponibilitat = $5
-       WHERE id = $6
-       RETURNING id, plat AS dish, categoria AS category, preu AS price, extres AS extras, disponibilitat AS available`,
-      [plat.trim(), categoria.trim(), preu, extres ? JSON.stringify(extres) : null, disponibilitat ?? true, id]
+       SET plat = $1, categoria = $2, preu = $3, extres = $4, disponibilitat = $5, imatge = $6, descripcio = $7
+       WHERE id = $8
+       RETURNING id, plat AS dish, categoria AS category, preu AS price, extres AS extras,
+                 imatge AS image, descripcio AS description, disponibilitat AS available`,
+      [
+        plat.trim(),
+        categoria.trim(),
+        preu,
+        extres ? JSON.stringify(extres) : null,
+        disponibilitat ?? true,
+        imatge?.trim() || null,
+        descripcio?.trim() || null,
+        id,
+      ]
     );
 
     if (result.rows.length === 0) {

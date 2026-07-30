@@ -7,6 +7,17 @@ export default function AdminDishRow({ dish, onEdit, onDelete }) {
         dish.available ? 'border-neutral-200 bg-white' : 'border-neutral-200 bg-neutral-100 opacity-70'
       }`}
     >
+      {dish.image ? (
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={dish.image} alt="" className="h-full w-full object-cover" />
+        </div>
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-xs text-neutral-400">
+          Sense foto
+        </div>
+      )}
+
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-neutral-900 sm:text-base">{dish.dish}</h3>
@@ -15,6 +26,7 @@ export default function AdminDishRow({ dish, onEdit, onDelete }) {
           )}
         </div>
         <p className="text-xs text-neutral-400">{dish.category}</p>
+        {dish.description && <p className="mt-1 text-xs text-neutral-500">{dish.description}</p>}
         {extras.length > 0 && (
           <p className="mt-1 text-xs text-neutral-400">
             Suplements: {extras.map((extra) => `${extra.nom} (+${Number(extra.preu).toFixed(2)}€)`).join(', ')}

@@ -31,13 +31,24 @@ export default function DishListItem({ dish }) {
 
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 text-2xl">
-        {categoryIcon(dish.category)}
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-brand-200">
+        {dish.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={dish.image} alt={dish.dish} className="h-full w-full object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-2xl">
+            {categoryIcon(dish.category)}
+          </span>
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-semibold text-neutral-900 sm:text-base">{dish.dish}</h3>
-        {hasExtras && <p className="mt-0.5 text-xs text-neutral-400">Personalitzable amb suplements</p>}
+        <h3 className="truncate text-sm font-semibold text-neutral-900 sm:text-base">{dish.dish}</h3>
+        {dish.description ? (
+          <p className="mt-0.5 truncate text-xs text-neutral-400">{dish.description}</p>
+        ) : (
+          hasExtras && <p className="mt-0.5 text-xs text-neutral-400">Personalitzable amb suplements</p>
+        )}
         <p className="mt-1 text-sm font-semibold text-brand-600">{Number(dish.price).toFixed(2)} €</p>
       </div>
 

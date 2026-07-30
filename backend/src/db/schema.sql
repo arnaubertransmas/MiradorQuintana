@@ -10,7 +10,9 @@ CREATE TABLE plats (
   categoria TEXT NOT NULL,
   preu NUMERIC(10,2) NOT NULL,
   extres JSONB,
-  disponibilitat BOOLEAN DEFAULT TRUE
+  disponibilitat BOOLEAN DEFAULT TRUE,
+  imatge TEXT,
+  descripcio TEXT
 );
 
 CREATE TABLE orders (

@@ -1,4 +1,4 @@
-import PortalHeader from '@/components/PortalHeader';
+import HomeHero from '@/components/HomeHero';
 import MenuExplorer from '@/components/MenuExplorer';
 import Footer from '@/components/Footer';
 import { getDishes } from '@/lib/api';
@@ -15,12 +15,7 @@ export default async function HomePage() {
 
   return (
     <main>
-      <PortalHeader
-        eyebrow="Estiu 2026"
-        title="El Mirador de la Quintana"
-        subtitle="Tria els teus plats, personalitza’ls i indica la teva taula."
-        align="center"
-      />
+      <HomeHero />
 
       <div className="pt-10">
         {error && (
