@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart-context';
 import { createOrder } from '@/lib/api';
 
+const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s]+$/;
+
 function CartContents({ onClose }) {
   const router = useRouter();
-  const { items, total, tableNumber, customerName, dispatch } = useCart();
+  const { items, total, tableNumber, isTableLocked, customerName, dispatch } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,22 +25,19 @@ function CartContents({ onClose }) {
     dispatch({ type: 'SET_CUSTOMER_NAME', customerName: event.target.value });
   }
 
-  function handleTableNumberChange(event) {
-    dispatch({ type: 'SET_TABLE_NUMBER', tableNumber: event.target.value });
-  }
-
-  const isCustomerNameValid = customerName.trim() !== '';
-  const tableNumberValue = Number(tableNumber);
-  const isTableNumberValid = tableNumber !== '' && tableNumberValue >= 1 && tableNumberValue <= 100;
-  const canCheckout = items.length > 0 && isCustomerNameValid && isTableNumberValid && !submitting;
+  const trimmedName = customerName.trim();
+  const isCustomerNameValid = trimmedName !== '' && NAME_REGEX.test(trimmedName);
+  const canCheckout = items.length > 0 && isCustomerNameValid && isTableLocked && !submitting;
 
   async function handleCheckout() {
+    if (!isTableLocked) return;
+
     setError(null);
     setSubmitting(true);
     try {
       const payload = {
-        nom_client: customerName.trim(),
-        num_taula: tableNumberValue,
+        nom_client: trimmedName,
+        num_taula: tableNumber,
         items: items.map((item) => ({
           plat_id: item.dishId,
           quantitat: item.quantity,
@@ -47,17 +46,18 @@ function CartContents({ onClose }) {
       };
       const order = await createOrder(payload);
       sessionStorage.setItem(
-        'pendingOrder',
+        'lastOrder',
         JSON.stringify({
           id: order.id,
           total: order.preu_total,
           tableNumber: order.num_taula,
           customerName: order.nom_client,
-          itemCount: items.length,
+          createdAt: order.created_at,
+          items,
         })
       );
       dispatch({ type: 'CLEAR' });
-      router.push(`/pay?orderId=${order.id}`);
+      router.push(`/ticket?orderId=${order.id}`);
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -142,21 +142,16 @@ function CartContents({ onClose }) {
             placeholder="p. ex. Anna"
             className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
+          {trimmedName !== '' && !NAME_REGEX.test(trimmedName) && (
+            <p className="mt-1 text-xs text-red-600">Només es permeten lletres, sense números ni símbols.</p>
+          )}
         </div>
 
-        <label className="block text-sm font-medium text-neutral-700" htmlFor="table-number">
-          Número de taula
-        </label>
-        <input
-          id="table-number"
-          type="number"
-          min={1}
-          max={100}
-          value={tableNumber}
-          onChange={handleTableNumberChange}
-          placeholder="p. ex. 12"
-          className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-        />
+        {!isTableLocked && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            Escaneja el codi QR de la teva taula per poder fer una comanda.
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between text-base font-semibold text-neutral-900">
@@ -172,7 +167,7 @@ function CartContents({ onClose }) {
         disabled={!canCheckout}
         className="mt-4 w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
-        {submitting ? 'Enviant comanda…' : 'Continuar al pagament'}
+        {submitting ? 'Enviant comanda…' : 'Fer la comanda'}
       </button>
     </div>
   );

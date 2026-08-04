@@ -3,7 +3,7 @@ import MenuExplorer from '@/components/MenuExplorer';
 import Footer from '@/components/Footer';
 import { getDishes } from '@/lib/api';
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }) {
   let dishes = [];
   let error = null;
 
@@ -12,6 +12,9 @@ export default async function HomePage() {
   } catch (err) {
     error = err.message;
   }
+
+  const taulaRaw = Number(searchParams?.taula);
+  const tableNumber = Number.isInteger(taulaRaw) && taulaRaw >= 1 && taulaRaw <= 100 ? taulaRaw : null;
 
   return (
     <main className="bg-white">
@@ -34,7 +37,7 @@ export default async function HomePage() {
           </div>
         )}
 
-        {!error && dishes.length > 0 && <MenuExplorer dishes={dishes} />}
+        {!error && dishes.length > 0 && <MenuExplorer dishes={dishes} tableNumber={tableNumber} />}
 
         <Footer />
       </div>

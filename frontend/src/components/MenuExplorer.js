@@ -8,7 +8,7 @@ import CategoryNav from './CategoryNav';
 import DishListItem from './DishListItem';
 import CartPanel from './CartPanel';
 
-export default function MenuExplorer({ dishes }) {
+export default function MenuExplorer({ dishes, tableNumber }) {
   const categories = useMemo(() => buildCategoryList(dishes), [dishes]);
   const [activeCategory, setActiveCategory] = useState(categories[0]?.key ?? null);
 
@@ -16,13 +16,13 @@ export default function MenuExplorer({ dishes }) {
   const activeCategoryMeta = categories.find((category) => category.key === activeCategory);
 
   return (
-    <CartProvider>
+    <CartProvider tableNumber={tableNumber}>
       <div className="mx-auto max-w-6xl px-4 pb-24 lg:pb-12">
         <CategoryNav categories={categories} active={activeCategory} onSelect={setActiveCategory} />
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_500px]">
           <div className="space-y-3">
             {activeCategoryMeta?.image && (
-              <div className="relative mb-2 h-56 w-full overflow-hidden rounded-2xl">
+              <div className="relative mb-2 h-64 w-full overflow-hidden rounded-2xl">
                 <Image
                   src={activeCategoryMeta.image}
                   alt={activeCategoryMeta.label}

@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 
 const ORDER_STATUSES = ['pending', 'preparing', 'completed', 'cancelled'];
+const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s]+$/;
 
 class OrderInputError extends Error {
   constructor(message) {
@@ -16,6 +17,9 @@ async function createOrder(req, res) {
 
   if (!nomClient) {
     return res.status(400).json({ error: 'nom_client is required' });
+  }
+  if (!NAME_REGEX.test(nomClient)) {
+    return res.status(400).json({ error: 'nom_client must contain letters only (no numbers or symbols)' });
   }
   if (!Number.isInteger(numTaula) || numTaula < 1 || numTaula > 100) {
     return res.status(400).json({ error: 'num_taula must be an integer between 1 and 100' });
@@ -69,7 +73,7 @@ async function createOrder(req, res) {
 
     const orderResult = await client.query(
       `INSERT INTO orders (nom_client, num_taula, estat, preu_total)
-       VALUES ($1, $2, 'pending', $3)
+       VALUES ($1, $2, 'preparing', $3)
        RETURNING id, nom_client, num_taula, estat, preu_total, created_at`,
       [nomClient, numTaula, total]
     );
@@ -97,30 +101,6 @@ async function createOrder(req, res) {
   }
 }
 
-// TEMPORARY: stands in for the real Stripe webhook (payment_intent.succeeded) until
-// Stripe is wired up. Flips the order to paid/preparing exactly like that webhook would.
-async function simulatePayment(req, res) {
-  const { id } = req.params;
-
-  try {
-    const result = await pool.query(
-      `UPDATE orders SET stripe_status = 'paid', estat = 'preparing', updated_at = NOW()
-       WHERE id = $1 AND estat = 'pending'
-       RETURNING id, num_taula, estat, preu_total, stripe_status, updated_at`,
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Order not found or already processed' });
-    }
-
-    return res.json(result.rows[0]);
-  } catch (err) {
-    console.error('Simulate payment error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
 async function listOrders(req, res) {
   const { status } = req.query;
 
@@ -132,7 +112,7 @@ async function listOrders(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.stripe_status, o.created_at, o.updated_at,
+      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.pagat, o.created_at, o.updated_at,
               COALESCE(
                 json_agg(
                   json_build_object(
@@ -162,7 +142,7 @@ async function listOrders(req, res) {
 async function getOrderHistory(req, res) {
   try {
     const result = await pool.query(
-      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.stripe_status, o.created_at, o.updated_at,
+      `SELECT o.id, o.nom_client, o.num_taula, o.estat, o.preu_total, o.pagat, o.created_at, o.updated_at,
               COALESCE(
                 json_agg(
                   json_build_object(
@@ -177,7 +157,7 @@ async function getOrderHistory(req, res) {
               ) AS items
        FROM orders o
        LEFT JOIN order_items oi ON oi.order_id = o.id
-       WHERE o.created_at >= NOW() - INTERVAL '1 day'
+       WHERE o.created_at >= NOW() - INTERVAL '72 hours'
        GROUP BY o.id
        ORDER BY o.created_at DESC`
     );
@@ -194,9 +174,6 @@ async function updateOrderStatus(req, res) {
 
   if (!ORDER_STATUSES.includes(estat)) {
     return res.status(400).json({ error: `estat must be one of: ${ORDER_STATUSES.join(', ')}` });
-  }
-  if (estat === 'preparing') {
-    return res.status(400).json({ error: 'Orders move to preparing automatically once payment is confirmed' });
   }
 
   try {
@@ -218,4 +195,41 @@ async function updateOrderStatus(req, res) {
   }
 }
 
-module.exports = { listOrders, updateOrderStatus, createOrder, simulatePayment, getOrderHistory };
+async function updatePagat(req, res) {
+  const { id } = req.params;
+  const { pagat } = req.body;
+
+  if (typeof pagat !== 'boolean') {
+    return res.status(400).json({ error: 'pagat must be a boolean' });
+  }
+
+  try {
+    if (pagat) {
+      const existing = await pool.query('SELECT estat FROM orders WHERE id = $1', [id]);
+      if (existing.rows.length === 0) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      if (!['completed', 'cancelled'].includes(existing.rows[0].estat)) {
+        return res.status(400).json({ error: 'Only completed or cancelled orders can be marked as paid' });
+      }
+    }
+
+    const result = await pool.query(
+      `UPDATE orders SET pagat = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, nom_client, num_taula, estat, preu_total, pagat, updated_at`,
+      [pagat, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Update pagat error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = { listOrders, updateOrderStatus, createOrder, getOrderHistory, updatePagat };

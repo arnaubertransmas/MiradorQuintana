@@ -7,8 +7,17 @@ import PageHero from '@/components/PageHero';
 import AdminMenuExplorer from '@/components/AdminMenuExplorer';
 import DishFormModal from '@/components/DishFormModal';
 import HistoryOrderCard from '@/components/HistoryOrderCard';
-import { getAllDishes, createDish, updateDish, deleteDish, getOrderHistory } from '@/lib/api';
+import {
+  getAllDishes,
+  createDish,
+  updateDish,
+  deleteDish,
+  getOrderHistory,
+  updateOrderPaymentStatus,
+} from '@/lib/api';
 import { getToken, clearSession } from '@/lib/auth';
+
+const HISTORY_POLL_INTERVAL_MS = 30000;
 
 function AdminBoard() {
   const router = useRouter();
@@ -44,6 +53,12 @@ function AdminBoard() {
     fetchHistory();
   }, [fetchDishes, fetchHistory]);
 
+  useEffect(() => {
+    if (view !== 'history') return undefined;
+    const interval = setInterval(fetchHistory, HISTORY_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [view, fetchHistory]);
+
   function handleLogout() {
     clearSession();
     router.push('/');
@@ -66,6 +81,15 @@ function AdminBoard() {
       await fetchDishes();
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  async function handleTogglePaid(order) {
+    try {
+      await updateOrderPaymentStatus(getToken(), order.id, !order.pagat);
+      await fetchHistory();
+    } catch (err) {
+      setHistoryError(err.message);
     }
   }
 
@@ -103,7 +127,7 @@ function AdminBoard() {
               view === 'history' ? 'bg-brand-600 text-white' : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >
-            Historial d&apos;avui
+            Historial (72h)
           </button>
         </div>
       </div>
@@ -133,10 +157,10 @@ function AdminBoard() {
 
           <div className="space-y-3">
             {history.map((order) => (
-              <HistoryOrderCard key={order.id} order={order} />
+              <HistoryOrderCard key={order.id} order={order} onTogglePaid={handleTogglePaid} />
             ))}
             {history.length === 0 && !historyError && (
-              <p className="py-12 text-center text-neutral-400">No hi ha comandes en les últimes 24 hores.</p>
+              <p className="py-12 text-center text-neutral-400">No hi ha comandes en les últimes 72 hores.</p>
             )}
           </div>
         </div>

@@ -21,8 +21,7 @@ CREATE TABLE orders (
   num_taula INTEGER NOT NULL,
   estat TEXT NOT NULL DEFAULT 'pending', -- pending | preparing | completed | cancelled
   preu_total NUMERIC(10,2) NOT NULL,
-  stripe_payment_id TEXT UNIQUE,
-  stripe_status TEXT DEFAULT 'pending',
+  pagat BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );

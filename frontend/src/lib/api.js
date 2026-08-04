@@ -94,17 +94,19 @@ export async function createOrder(payload) {
   return handleResponse(res);
 }
 
-export async function simulatePayment(orderId) {
-  const res = await fetch(`${API_URL}/api/orders/${orderId}/simulate-payment`, {
-    method: 'POST',
-  });
-  return handleResponse(res);
-}
-
 export async function getOrderHistory(token) {
   const res = await fetch(`${API_URL}/api/orders/history`, {
     cache: 'no-store',
     headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function updateOrderPaymentStatus(token, id, pagat) {
+  const res = await fetch(`${API_URL}/api/orders/${id}/pagat`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ pagat }),
   });
   return handleResponse(res);
 }

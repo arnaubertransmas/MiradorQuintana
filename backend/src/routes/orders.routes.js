@@ -4,8 +4,8 @@ const {
   listOrders,
   updateOrderStatus,
   createOrder,
-  simulatePayment,
   getOrderHistory,
+  updatePagat,
 } = require('../controllers/orders.controller');
 
 const router = Router();
@@ -13,9 +13,9 @@ const requireKitchen = [requireAuth, requireRole('cuina')];
 const requireAdmin = [requireAuth, requireRole('admin')];
 
 router.post('/', createOrder);
-router.post('/:id/simulate-payment', simulatePayment);
 router.get('/history', requireAdmin, getOrderHistory);
 router.get('/', requireKitchen, listOrders);
 router.patch('/:id', requireKitchen, updateOrderStatus);
+router.patch('/:id/pagat', requireAdmin, updatePagat);
 
 module.exports = router;
