@@ -50,16 +50,21 @@ async function createOrder(req, res) {
       }
 
       const availableExtras = Array.isArray(dish.extres) ? dish.extres : [];
-      const requestedNames = Array.isArray(item.extres) ? item.extres.map((extra) => extra.nom) : [];
-      const matchedExtras = requestedNames.map((nom) => {
-        const match = availableExtras.find((extra) => extra.nom === nom);
+      const requestedExtras = Array.isArray(item.extres) ? item.extres : [];
+      const matchedExtras = requestedExtras.map((requested) => {
+        const match = availableExtras.find((extra) => extra.nom === requested.nom);
         if (!match) {
-          throw new OrderInputError(`Extra "${nom}" is not valid for dish "${dish.plat}"`);
+          throw new OrderInputError(`Extra "${requested.nom}" is not valid for dish "${dish.plat}"`);
         }
-        return match;
+        const quantitat = Number(requested.quantitat);
+        if (!Number.isInteger(quantitat) || quantitat <= 0) {
+          throw new OrderInputError(`Extra "${requested.nom}" needs a valid quantitat`);
+        }
+        return { nom: match.nom, preu: match.preu, quantitat };
       });
 
-      const unitPrice = Number(dish.preu) + matchedExtras.reduce((sum, extra) => sum + Number(extra.preu), 0);
+      const unitPrice =
+        Number(dish.preu) + matchedExtras.reduce((sum, extra) => sum + Number(extra.preu) * extra.quantitat, 0);
       total += unitPrice * item.quantitat;
 
       preparedItems.push({

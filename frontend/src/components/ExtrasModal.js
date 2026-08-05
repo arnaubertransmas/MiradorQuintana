@@ -6,19 +6,28 @@ import { useCart } from '@/lib/cart-context';
 export default function ExtrasModal({ dish, onClose }) {
   const { dispatch } = useCart();
   const extras = Array.isArray(dish.extras) ? dish.extras : [];
-  const [selected, setSelected] = useState([]);
+  const [extraQuantities, setExtraQuantities] = useState({});
   const [quantity, setQuantity] = useState(1);
 
-  function toggleExtra(extra) {
-    setSelected((prev) =>
-      prev.some((e) => e.nom === extra.nom) ? prev.filter((e) => e.nom !== extra.nom) : [...prev, extra]
-    );
+  function changeExtraQuantity(nom, delta) {
+    setExtraQuantities((prev) => {
+      const next = Math.max(0, (prev[nom] ?? 0) + delta);
+      return { ...prev, [nom]: next };
+    });
   }
 
-  const unitTotal = Number(dish.price) + selected.reduce((sum, extra) => sum + Number(extra.preu), 0);
+  const selectedExtras = extras
+    .filter((extra) => (extraQuantities[extra.nom] ?? 0) > 0)
+    .map((extra) => ({ nom: extra.nom, preu: extra.preu, quantitat: extraQuantities[extra.nom] }));
+
+  const unitTotal =
+    Number(dish.price) + selectedExtras.reduce((sum, extra) => sum + Number(extra.preu) * extra.quantitat, 0);
 
   function handleAdd() {
-    const extrasKey = selected.map((e) => e.nom).sort().join('|');
+    const extrasKey = selectedExtras
+      .map((extra) => `${extra.nom}:${extra.quantitat}`)
+      .sort()
+      .join('|');
     dispatch({
       type: 'ADD_ITEM',
       item: {
@@ -27,7 +36,7 @@ export default function ExtrasModal({ dish, onClose }) {
         name: dish.dish,
         unitPrice: dish.price,
         quantity,
-        extras: selected,
+        extras: selectedExtras,
       },
     });
     onClose();
@@ -49,23 +58,35 @@ export default function ExtrasModal({ dish, onClose }) {
           <div className="mt-4 space-y-2">
             <p className="text-sm font-medium text-neutral-700">Suplements</p>
             {extras.map((extra) => {
-              const isChecked = selected.some((e) => e.nom === extra.nom);
+              const extraQuantity = extraQuantities[extra.nom] ?? 0;
               return (
-                <label
+                <div
                   key={extra.nom}
-                  className="flex cursor-pointer items-center justify-between rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-xl border border-neutral-200 px-3 py-2 text-sm"
                 >
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => toggleExtra(extra)}
-                      className="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
-                    />
-                    {extra.nom}
-                  </span>
-                  <span className="text-neutral-400">+{Number(extra.preu).toFixed(2)} €</span>
-                </label>
+                  <div>
+                    <p className="text-neutral-900">{extra.nom}</p>
+                    <p className="text-xs text-neutral-400">+{Number(extra.preu).toFixed(2)} € cada un</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => changeExtraQuantity(extra.nom, -1)}
+                      disabled={extraQuantity === 0}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-300 text-neutral-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      −
+                    </button>
+                    <span className="w-4 text-center text-sm font-semibold">{extraQuantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => changeExtraQuantity(extra.nom, 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-300 text-neutral-500 hover:border-brand-500 hover:text-brand-600"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>

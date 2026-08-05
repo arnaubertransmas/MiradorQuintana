@@ -34,7 +34,10 @@ export default function OrderCard({ order, onAdvance, onCancel }) {
           <li key={item.id}>
             <span className="font-medium">{item.quantitat}×</span> {item.plat_nom}
             {Array.isArray(item.extres) && item.extres.length > 0 && (
-              <span className="text-neutral-400"> ({item.extres.map((extra) => extra.nom).join(', ')})</span>
+              <span className="text-neutral-400">
+                {' '}
+                ({item.extres.map((extra) => `${extra.nom} x${extra.quantitat}`).join(', ')})
+              </span>
             )}
           </li>
         ))}

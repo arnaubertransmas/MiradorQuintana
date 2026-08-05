@@ -51,7 +51,7 @@ export function CartProvider({ children, tableNumber }) {
   const total = useMemo(
     () =>
       state.items.reduce((sum, item) => {
-        const extrasTotal = (item.extras || []).reduce((s, extra) => s + Number(extra.preu), 0);
+        const extrasTotal = (item.extras || []).reduce((s, extra) => s + Number(extra.preu) * extra.quantitat, 0);
         return sum + (Number(item.unitPrice) + extrasTotal) * item.quantity;
       }, 0),
     [state.items]

@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <PageHero caption="Accés del personal" subtitle="Inicia sessió per accedir a Cuina o Administració." />
+      <PageHero caption="Accés del personal" subtitle=" " />
 
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">

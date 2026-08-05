@@ -18,7 +18,14 @@ export default async function HomePage({ searchParams }) {
 
   return (
     <main className="bg-white">
-      <PageHero caption="Castellcir" subtitle="Tria els teus plats i personalitza’ls." />
+      <PageHero
+        caption="Castellcir"
+        subtitle="Tria els teus plats i personalitza’ls."
+        extraImages={[
+          { src: '/local_interior.jpg', alt: 'Interior del Mirador de la Quintana' },
+          { src: '/local_fora.jpg', alt: 'Entrada del Mirador de la Quintana', position: 'object-[65%_45%]' },
+        ]}
+      />
 
       <div className="pt-10">
         {error && (

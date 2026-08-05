@@ -55,7 +55,10 @@ function TicketContent() {
 
               <ul className="mt-4 space-y-3 border-t border-neutral-200 pt-4">
                 {order.items.map((item) => {
-                  const extrasTotal = (item.extras || []).reduce((sum, extra) => sum + Number(extra.preu), 0);
+                  const extrasTotal = (item.extras || []).reduce(
+                    (sum, extra) => sum + Number(extra.preu) * extra.quantitat,
+                    0
+                  );
                   const lineTotal = (Number(item.unitPrice) + extrasTotal) * item.quantity;
                   return (
                     <li key={item.key} className="flex items-start justify-between gap-3 text-sm">
@@ -65,7 +68,7 @@ function TicketContent() {
                         </p>
                         {item.extras?.length > 0 && (
                           <p className="mt-0.5 text-xs text-neutral-400">
-                            {item.extras.map((extra) => extra.nom).join(', ')}
+                            {item.extras.map((extra) => `${extra.nom} x${extra.quantitat}`).join(', ')}
                           </p>
                         )}
                       </div>

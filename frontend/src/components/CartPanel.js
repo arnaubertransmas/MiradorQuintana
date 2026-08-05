@@ -41,7 +41,7 @@ function CartContents({ onClose }) {
         items: items.map((item) => ({
           plat_id: item.dishId,
           quantitat: item.quantity,
-          extres: (item.extras || []).map((extra) => ({ nom: extra.nom })),
+          extres: (item.extras || []).map((extra) => ({ nom: extra.nom, quantitat: extra.quantitat })),
         })),
       };
       const order = await createOrder(payload);
@@ -82,7 +82,10 @@ function CartContents({ onClose }) {
       ) : (
         <div className="mt-4 max-h-80 flex-1 space-y-3 overflow-y-auto">
           {items.map((item) => {
-            const extrasTotal = (item.extras || []).reduce((sum, extra) => sum + Number(extra.preu), 0);
+            const extrasTotal = (item.extras || []).reduce(
+              (sum, extra) => sum + Number(extra.preu) * extra.quantitat,
+              0
+            );
             const lineTotal = (Number(item.unitPrice) + extrasTotal) * item.quantity;
             return (
               <div key={item.key} className="rounded-xl border border-neutral-200 p-3">
@@ -91,7 +94,7 @@ function CartContents({ onClose }) {
                     <p className="text-sm font-medium text-neutral-900">{item.name}</p>
                     {item.extras?.length > 0 && (
                       <p className="mt-0.5 text-xs text-neutral-400">
-                        {item.extras.map((extra) => extra.nom).join(', ')}
+                        {item.extras.map((extra) => `${extra.nom} x${extra.quantitat}`).join(', ')}
                       </p>
                     )}
                   </div>
